@@ -12,15 +12,15 @@ public class Vanilla extends Instrument{
     private OptionType optionType;
     private BigDecimal strike;
 
-    public Vanilla(String ticker, LocalDate maturity, OptionType optionType, BigDecimal strike) {
-        super(ticker);
+    public Vanilla(String ticker, LocalDate maturity, OptionType optionType, BigDecimal strike, String underlying) {
+        super(ticker, underlying);
         this.maturity = maturity;
         this.optionType = optionType;
         this.strike = strike;
     }
 
     public Vanilla() {
-        super(null);
+        super(null, null);
     }
 
     public LocalDate getMaturity() {

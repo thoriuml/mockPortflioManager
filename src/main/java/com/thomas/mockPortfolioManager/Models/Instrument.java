@@ -5,12 +5,6 @@ import javax.persistence.*;
 @Entity
 public abstract class Instrument {
 
-    public Instrument(String ticker) {
-        this.ticker = ticker;
-    }
-
-    public Instrument() {
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,6 +12,25 @@ public abstract class Instrument {
 
     @Column(nullable = false)
     private String ticker;
+
+    @Column(nullable = false)
+    private String underlyingTicker;
+
+    public Instrument(String ticker, String underlyingTicker) {
+        this.ticker = ticker;
+        this.underlyingTicker = underlyingTicker;
+    }
+
+    public Instrument() {
+    }
+
+    public String getUnderlyingTicker() {
+        return underlyingTicker;
+    }
+
+    public void setUnderlyingTicker(String underlyingTicker) {
+        this.underlyingTicker = underlyingTicker;
+    }
 
     public Long getInstrumentId() {
         return instrumentId;

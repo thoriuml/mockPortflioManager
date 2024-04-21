@@ -1,23 +1,21 @@
 package com.thomas.mockPortfolioManager.conf;
 
-import com.thomas.mockPortfolioManager.Repositories.InstrumentRepository;
-import com.thomas.mockPortfolioManager.Repositories.ProductRepository;
-import com.thomas.mockPortfolioManager.Services.PortfolioImporter.CSVPositionImporter;
+import com.thomas.mockPortfolioManager.Services.MarketData.MarketDataPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Configuration
+@ManagedResource
 public class PortfolioManagerConfiguration {
-
     @Autowired
-    private InstrumentRepository instrumentRepository;
-    @Autowired
-    private ProductRepository productRepository;
+    private MarketDataPublisher marketDataPublisher;
 
-    @Bean
-    public CSVPositionImporter CSVPositionImporter(ProductRepository productRepository, InstrumentRepository instrumentRepository){
-        return new CSVPositionImporter(productRepository, instrumentRepository);
+    @Scheduled(cron = "${portfolio.marketData.interval.cron}")
+    @ManagedOperation
+    public void mockPublishMarketData() {
+        marketDataPublisher.mockPublishMarketData();
     }
 }

@@ -1,4 +1,4 @@
-package com.thomas.mockPortfolioManager.Services.PortfolioImporter;
+package com.thomas.mockPortfolioManager.Services.Portflio;
 
 import com.thomas.mockPortfolioManager.Enum.OptionType;
 import com.thomas.mockPortfolioManager.Models.Instrument;
@@ -9,13 +9,17 @@ import com.thomas.mockPortfolioManager.Repositories.InstrumentRepository;
 import com.thomas.mockPortfolioManager.Repositories.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
+import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -28,26 +32,29 @@ import java.util.Objects;
 import java.util.Optional;
 
 @ManagedResource
+@Service
 public class CSVPositionImporter {
 
-    private final InstrumentRepository instrumentRepository;
-    private final ProductRepository productRepository;
+    @Autowired
+    private InstrumentRepository instrumentRepository;
+    @Autowired
+    private ProductRepository productRepository;
     @Value("${portfolio.import.file.path:}")
     private String filePath;
     private final Logger LOGGER = LoggerFactory.getLogger(CSVPositionImporter.class);
 
     private final DateTimeFormatter vanillaMaturityFormat = new DateTimeFormatterBuilder().parseDefaulting(ChronoField.DAY_OF_MONTH,1).parseCaseInsensitive().appendPattern("MMMyyyy").toFormatter();
 
-
-    public CSVPositionImporter(ProductRepository productRepository, InstrumentRepository instrumentRepository) {
-        this.productRepository = productRepository;
-        this.instrumentRepository = instrumentRepository;
+    @PostConstruct
+    public void init() {
+        LOGGER.info("Init load from CSV");
+        loadPortfolioFromCSV();
     }
 
     @ManagedOperation
     public void loadPortfolioFromCSV() {
-        List<Product> productList = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(new ClassPathResource(filePath).getFile()))) {
+            List<Product> productList = new ArrayList<>();
             String line;
             while (!StringUtils.isEmpty(line = reader.readLine())) {
                 Product product = parseLineToProduct(line.trim());
@@ -56,7 +63,6 @@ public class CSVPositionImporter {
                 }
             }
             productRepository.saveAll(productList);
-            reader.close();
         } catch (Exception exception) {
             LOGGER.error("Failed to initialise portfolio", exception);
         }
@@ -77,7 +83,7 @@ public class CSVPositionImporter {
             LOGGER.error("Invalid size format", numberFormatException);
             return null;
         }
-        Product product = new Product(size, input);
+        Product product = new Product(size, ticker);
         if (isStock(ticker)) {
             product.setInstrument(fetchOrCreateStock(inputArray[0]));
             return product;
@@ -93,7 +99,7 @@ public class CSVPositionImporter {
 
     private Stock fetchOrCreateStock(String ticker) {
         Optional<Instrument> optionalStock = instrumentRepository.findByTicker(ticker);
-        if(optionalStock.isPresent()){
+        if (optionalStock.isPresent() && optionalStock.get() instanceof Stock) {
             return (Stock) optionalStock.get();
         }else{
             Stock stock = new Stock(ticker);
@@ -104,7 +110,7 @@ public class CSVPositionImporter {
 
     private Vanilla fetchOrCreateVanilla(String ticker) {
         Optional<Instrument> optionalVanilla = instrumentRepository.findByTicker(ticker);
-        if (optionalVanilla.isPresent()) {
+        if (optionalVanilla.isPresent() && optionalVanilla.get() instanceof Vanilla) {
             return (Vanilla) optionalVanilla.get();
         }
         String[] vanillaInput = StringUtils.delimitedListToStringArray(ticker, "-");
@@ -135,7 +141,10 @@ public class CSVPositionImporter {
             LOGGER.error("Invalid vanilla option type input for {}", ticker);
             return null;
         }
-        Vanilla vanilla = new Vanilla(ticker, maturity, optionType, strike);
+
+        String underlying = vanillaInput[0];
+
+        Vanilla vanilla = new Vanilla(ticker, maturity, optionType, strike, underlying);
         instrumentRepository.save(vanilla);
         return vanilla;
     }
