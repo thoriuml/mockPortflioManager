@@ -8,6 +8,7 @@ Code for a mock portfolio manager where:
 Some assumptions and notes
 - We are assuming that all the products in the CSV is correct and valid, the code does not validate if the instrument exists other than some basic syntax checks when loading
 - Only supports european style for the vanilla calculations
+- Only supports 1 portfolio 
 - Market price updates are generated randomly between -5% to 5% from previous price
 - Only publishes "AAPL" and "TELSA" market prices based on a static map in the mockPublisher, therefore only these two's derivatives and stock is usable
 - While it stores in BigDecial this uses double when calculating, potential precision issues warning
