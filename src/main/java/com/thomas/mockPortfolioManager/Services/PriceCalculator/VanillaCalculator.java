@@ -16,7 +16,6 @@ public class VanillaCalculator implements PriceCalculatorInterface { //european 
     @Autowired
     private LocalDateProvider localDateProvider;
     private final NormalDistribution normalDistribution = new NormalDistribution();
-
     private final BigDecimal DAYS_IN_YEAR = BigDecimal.valueOf(365);//assuming always non leap year here
     private final BigDecimal INTEREST_RATE = BigDecimal.valueOf(0.02); //static value for risk free interest
     private final BigDecimal VOL = BigDecimal.valueOf(0.15); //static value for volatility
@@ -63,9 +62,7 @@ public class VanillaCalculator implements PriceCalculatorInterface { //european 
         return d1Value - vol * Math.sqrt(timeToMaturity);
     }
 
-
     private BigDecimal resolveYearsToMaturity(Vanilla vanilla) { //return t value by the days between now and maturity
-//        BigDecimal dayDiff = BigDecimal.valueOf(vanilla.getMaturity().until(localDateProvider.getLocalDate(), ChronoUnit.DAYS));
         BigDecimal dayDiff = BigDecimal.valueOf(localDateProvider.getLocalDate().until(vanilla.getMaturity(), ChronoUnit.DAYS));
         return dayDiff.divide(DAYS_IN_YEAR, MathContext.DECIMAL128);
     }

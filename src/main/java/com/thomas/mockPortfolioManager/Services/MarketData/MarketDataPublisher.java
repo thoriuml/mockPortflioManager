@@ -38,6 +38,12 @@ public class MarketDataPublisher {
     public MarketDataPublisher() {
     }
 
+    public MarketDataPublisher(MarketDataListener marketDataListener, Cache<String, BigDecimal> priceCache, Random random) {
+        this.marketDataListener = marketDataListener;
+        this.priceCache = priceCache;
+        this.random = random;
+    }
+
     public void mockPublishMarketData() { //each trigger of this will push some shifted market price to marketDataListener
         Map<String, BigDecimal> publishMap = new HashMap<>();
         TICKERS_TO_PUBLISH.forEach((k, v) -> {

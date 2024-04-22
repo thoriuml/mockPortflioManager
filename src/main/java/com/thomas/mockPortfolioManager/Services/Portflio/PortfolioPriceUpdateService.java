@@ -36,6 +36,17 @@ public class PortfolioPriceUpdateService {
     @Autowired
     private PortfolioUpdatePublisher portfolioUpdatePublisher;
 
+    public PortfolioPriceUpdateService() {
+    }
+
+    public PortfolioPriceUpdateService(ProductRepository productRepository, InstrumentRepository instrumentRepository, VanillaCalculator vanillaCalculator, StockCalculator stockCalculator, PortfolioUpdatePublisher portfolioUpdatePublisher) {
+        this.productRepository = productRepository;
+        this.instrumentRepository = instrumentRepository;
+        this.vanillaCalculator = vanillaCalculator;
+        this.stockCalculator = stockCalculator;
+        this.portfolioUpdatePublisher = portfolioUpdatePublisher;
+    }
+
     public void processPriceChange(Map<String, BigDecimal> incomingMessage) {
         LOGGER.info("Starting price update with {}", incomingMessage);
         List<Product> portfolio = ImmutableList.copyOf(productRepository.findAll());

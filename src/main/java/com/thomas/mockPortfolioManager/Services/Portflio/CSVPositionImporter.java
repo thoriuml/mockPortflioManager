@@ -1,5 +1,6 @@
 package com.thomas.mockPortfolioManager.Services.Portflio;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.thomas.mockPortfolioManager.Enum.OptionType;
 import com.thomas.mockPortfolioManager.Models.Instrument;
 import com.thomas.mockPortfolioManager.Models.Product;
@@ -43,7 +44,7 @@ public class CSVPositionImporter {
     private String filePath;
     private final Logger LOGGER = LoggerFactory.getLogger(CSVPositionImporter.class);
 
-    private final DateTimeFormatter vanillaMaturityFormat = new DateTimeFormatterBuilder().parseDefaulting(ChronoField.DAY_OF_MONTH,1).parseCaseInsensitive().appendPattern("MMMyyyy").toFormatter();
+    private final DateTimeFormatter vanillaMaturityFormat = new DateTimeFormatterBuilder().parseDefaulting(ChronoField.DAY_OF_MONTH, 1).parseCaseInsensitive().appendPattern("MMMyyyy").toFormatter();
 
     @PostConstruct
     public void init() {
@@ -51,14 +52,30 @@ public class CSVPositionImporter {
         loadPortfolioFromCSV();
     }
 
+    @VisibleForTesting
+    public CSVPositionImporter(InstrumentRepository instrumentRepository, ProductRepository productRepository, String filePath) {
+        this.instrumentRepository = instrumentRepository;
+        this.productRepository = productRepository;
+        this.filePath = filePath;
+    }
+
+    public CSVPositionImporter() {
+    }
+
     @ManagedOperation
+    public void reloadCSV() {
+        productRepository.deleteAll();
+        instrumentRepository.deleteAll();
+        loadPortfolioFromCSV();
+    }
+
     public void loadPortfolioFromCSV() {
         try (BufferedReader reader = new BufferedReader(new FileReader(new ClassPathResource(filePath).getFile()))) {
             List<Product> productList = new ArrayList<>();
             String line;
             while (!StringUtils.isEmpty(line = reader.readLine())) {
                 Product product = parseLineToProduct(line.trim());
-                if(Objects.nonNull(product)){
+                if (Objects.nonNull(product)) {
                     productList.add(product);
                 }
             }
@@ -101,7 +118,7 @@ public class CSVPositionImporter {
         Optional<Instrument> optionalStock = instrumentRepository.findByTicker(ticker);
         if (optionalStock.isPresent() && optionalStock.get() instanceof Stock) {
             return (Stock) optionalStock.get();
-        }else{
+        } else {
             Stock stock = new Stock(ticker);
             instrumentRepository.save(stock);
             return stock;

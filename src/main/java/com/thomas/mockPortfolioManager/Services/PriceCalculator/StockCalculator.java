@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
-public class StockCalculator implements PriceCalculatorInterface{
+public class StockCalculator implements PriceCalculatorInterface {
     @Override
     public BigDecimal calculateInstrumentValue(Instrument instrument, BigDecimal underlyingPrice) {
         return underlyingPrice;

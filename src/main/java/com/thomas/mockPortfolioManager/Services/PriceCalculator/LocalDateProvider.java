@@ -8,7 +8,6 @@ import java.time.LocalDate;
 public class LocalDateProvider {
     public LocalDateProvider() {
     }
-
     public LocalDate getLocalDate() {
         return LocalDate.now();
     }
